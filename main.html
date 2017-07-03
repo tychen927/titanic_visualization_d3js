@@ -1,0 +1,156 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <style type="text/css">
+  .circle{
+  	pointer-events: all;
+  }
+  </style>
+
+  <title>Test</title>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script type="text/javascript">
+var main = d3.text("titanic_data.csv", function(data) {
+	// loading the csv in
+	var parsedCSV = d3.csv.parseRows(data);
+	var main = parsedCSV.map(function(d){
+      return{
+          survived:d[1],
+          pclass:d[2],
+          name:d[3],
+          sex:d[4],
+          age:d[5],
+          SibSp:d[6],
+          Parch:d[7],
+          ticket:d[8],
+          fare:d[9],
+          cabin:d[10],
+          embarked:d[11]
+      }});
+
+	//cleaning the data
+	var cleaning = function(row){
+		if (row == "NaN" | row == "" ){
+			final = 0 
+		}else{
+			final=parseInt(row)
+		}
+		return final
+	};
+
+	// loading the color for the dots (survival)
+	var color = new Array();
+
+	for (a = 1; a < Object.keys(main).length ; a++){
+		if (main[a].survived == 0){
+			color.push("black")
+		}else{
+			color.push("red")
+		}
+	};
+
+	// loading x,y of the graph
+	var x = new Array();
+	var y = new Array();
+
+	for (a = 1; a < Object.keys(main).length ; a++){
+		x.push(cleaning(main[a].age));
+	};
+
+	for (a = 1; a < Object.keys(main).length ; a++){
+		y.push(cleaning(main[a].fare));
+	};
+
+	// setting width and height
+	width = 600
+	height = 400
+
+	// scaling x,y
+	
+	var x_scaled = d3.scale.linear()
+		.domain([Math.min(...x),Math.max(...x)])
+		.range([30,width-30]);
+
+	var y_scaled = d3.scale.linear()
+		.domain([Math.min(...y),Math.max(...y)])
+		.range([height-30,5]);
+	
+	// building svg
+	var svg = d3.select('body')
+    	.append('svg')
+    	.attr({
+      'width':width,
+      'height':height
+    });
+
+    // the axis part of the graph
+
+    var axisX = d3.svg.axis()
+      .scale(x_scaled)
+      .orient("bottom")
+      .ticks(10);
+
+    var axisY = d3.svg.axis()
+      .scale(y_scaled)
+      .orient("left")
+      .ticks(10);
+
+    var height_new = height - 30 
+
+    svg.append("g")
+    	.call(axisX)
+    	.attr({
+      	'fill':'none',
+      	'stroke':'#000',
+      	'transform':'translate(0,'+height_new+')' 
+     	}).selectAll('text')
+     		.attr({
+      		'fill':'#000',
+      		'stroke':'none',
+     		}).style({
+      		'font-size':'11px'
+     		});
+
+    svg.append("g")
+    	.call(axisY)
+    	.attr({
+      	'fill':'none',
+      	'stroke':'#000',
+      	'transform':'translate(30,0)' 
+     	}).selectAll('text')
+     		.attr({
+      		'fill':'#000',
+      		'stroke':'none',
+     		}).style({
+      		'font-size':'11px'
+     		});
+/*
+	var tooltip = d3.select("body")
+		.append("div")
+		.style("position", "absolute")
+		.style("z-index", "10")
+		.style("visibility", "hidden")
+		.text("a simple tooltip");
+*/
+	// plotting the dots
+	for (a = 0 ; a < y.length ; a++){
+		svg.append("circle")
+		.attr({
+		"cx":x_scaled(x[a]),
+		"cy":y_scaled(y[a]),
+		"r":2,
+		"stroke":color[a],
+		"fill":"black"
+		})
+		.append("svg:title")
+   		.text(function() { return y_scaled(y[a]) ;});
+	};
+
+});
+</script>
+
+</body>
