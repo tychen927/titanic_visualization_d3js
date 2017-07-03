@@ -1,19 +1,41 @@
 <html>
 <head>
   <meta charset="UTF-8">
-
-  <style type="text/css">
-  .circle{
-  	pointer-events: all;
-  }
-  </style>
-
   <title>Test</title>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style type="text/css">
+	div.tooltip {   
+		position: absolute;           
+		text-align: left;                          
+		padding: 2px;             
+		font: 14px sans-serif;
+		color:  #4d0000;        
+		background:   #ff6666;   
+		border: 5px;      
+		border-radius: 2px;           
+		pointer-events: none;         
+	}
+	.button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+	}
+  </style>
+  
 </head>
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script type="text/javascript">
+window.addEventListener('load',function(){
+	// plz change the path in order for the script to run
 var main = d3.text("titanic_data.csv", function(data) {
 	// loading the csv in
 	var parsedCSV = d3.csv.parseRows(data);
@@ -21,136 +43,316 @@ var main = d3.text("titanic_data.csv", function(data) {
       return{
           survived:d[1],
           pclass:d[2],
-          name:d[3],
           sex:d[4],
-          age:d[5],
-          SibSp:d[6],
-          Parch:d[7],
-          ticket:d[8],
-          fare:d[9],
+          sibSp:d[6],
+          parch:d[7],
           cabin:d[10],
-          embarked:d[11]
+          port:d[11]
       }});
 
-	//cleaning the data
-	var cleaning = function(row){
-		if (row == "NaN" | row == "" ){
-			final = 0 
-		}else{
-			final=parseInt(row)
+	// appending the "tooltip" needed for the mouse event
+	var div = d3.select("body").append("div")   
+	    .attr("class", "tooltip")               
+	    .style("opacity", 0);
+
+	// loading the data to the desired format
+
+	var main_new = new Array();
+
+	for (a = 1; a < Object.keys(main).length ; a++){
+		var survived = main[a].survived
+		var pclass = main[a].pclass
+		var sex = main[a].sex
+		var sibSp = main[a].sibSp
+		var parch = main[a].parch
+		var cabin = main[a].cabin
+		var port = main[a].port
+
+		var all = {
+			"survived":survived,
+			"pclass":pclass,
+			"sex":sex,
+			"sibSp":sibSp,
+			"parch":parch,
+			"cabin":cabin,
+			"port":port
 		}
-		return final
+		main_new.push(all)
 	};
 
-	// loading the color for the dots (survival)
-	var color = new Array();
+	vars_list = ["pclass","sex","sibSp","parch","port"]
 
-	for (a = 1; a < Object.keys(main).length ; a++){
-		if (main[a].survived == 0){
-			color.push("black")
-		}else{
-			color.push("red")
-		}
-	};
-
-	// loading x,y of the graph
-	var x = new Array();
-	var y = new Array();
-
-	for (a = 1; a < Object.keys(main).length ; a++){
-		x.push(cleaning(main[a].age));
-	};
-
-	for (a = 1; a < Object.keys(main).length ; a++){
-		y.push(cleaning(main[a].fare));
-	};
-
-	// setting width and height
-	width = 600
+	// basic setting for the SVG
+	// "width_all" includes buffer zone for outputs
+	width_all = 800
+	width = width_all - 200
 	height = 400
 
-	// scaling x,y
-	
-	var x_scaled = d3.scale.linear()
-		.domain([Math.min(...x),Math.max(...x)])
-		.range([30,width-30]);
+	// the titles and the contents
+	d3.select("body")
+	.append("h2")
+	.text("Titanic Data: Who is more likely to survive?")
 
-	var y_scaled = d3.scale.linear()
-		.domain([Math.min(...y),Math.max(...y)])
-		.range([height-30,5]);
-	
-	// building svg
-	var svg = d3.select('body')
-    	.append('svg')
-    	.attr({
-      'width':width,
-      'height':height
-    });
+	d3.select("body")
+	.append("b")
+	.html("The followings are the vars of the titanic dataset.<br> Click to get graph.<br><br>")
 
-    // the axis part of the graph
-
-    var axisX = d3.svg.axis()
-      .scale(x_scaled)
-      .orient("bottom")
-      .ticks(10);
-
-    var axisY = d3.svg.axis()
-      .scale(y_scaled)
-      .orient("left")
-      .ticks(10);
-
-    var height_new = height - 30 
-
-    svg.append("g")
-    	.call(axisX)
-    	.attr({
-      	'fill':'none',
-      	'stroke':'#000',
-      	'transform':'translate(0,'+height_new+')' 
-     	}).selectAll('text')
-     		.attr({
-      		'fill':'#000',
-      		'stroke':'none',
-     		}).style({
-      		'font-size':'11px'
-     		});
-
-    svg.append("g")
-    	.call(axisY)
-    	.attr({
-      	'fill':'none',
-      	'stroke':'#000',
-      	'transform':'translate(30,0)' 
-     	}).selectAll('text')
-     		.attr({
-      		'fill':'#000',
-      		'stroke':'none',
-     		}).style({
-      		'font-size':'11px'
-     		});
-/*
-	var tooltip = d3.select("body")
-		.append("div")
-		.style("position", "absolute")
-		.style("z-index", "10")
-		.style("visibility", "hidden")
-		.text("a simple tooltip");
-*/
-	// plotting the dots
-	for (a = 0 ; a < y.length ; a++){
-		svg.append("circle")
-		.attr({
-		"cx":x_scaled(x[a]),
-		"cy":y_scaled(y[a]),
-		"r":2,
-		"stroke":color[a],
-		"fill":"black"
-		})
-		.append("svg:title")
-   		.text(function() { return y_scaled(y[a]) ;});
+	// explain text for the vars (displayed in mouse event)
+	var_explan = {
+		"pclass":"This represents the passenger class.",
+		"sex":"This represents the customer's gender.",
+		"sibSp":"This represents the customer's sibiling and spouses on board.",
+		"parch":"This represents the customer's parents or children on board.",
+		"port":"This represents the cutomer's port on board."
 	};
 
-});
+	// adding the bottoms 
+	d3.select("body")
+	.selectAll("button")
+	.data(vars_list)
+	.enter()
+	.append("button")
+	.text(function(d){return d})
+	.attr({
+	"type":"button",
+	"x":50,
+	"y":10
+	})
+	.on("mouseover", function(d){  
+		div.style("opacity", .9)
+		div.transition 
+		div.html(var_explan[d])
+		.style("left", (d3.event.pageX) + "px")
+		.style("top", (d3.event.pageY - 28) + "px")
+		.style("font-size",12)
+		})
+	.on("mouseout", function(d) {                
+		div
+		.transition()
+        .duration(600)
+        .style("opacity", 0) ;   
+		})
+	.on("click", function(d) { 
+		d3.selectAll('button').style({
+		'background':'#ddd',
+		'color':'#000'
+		});
+		this.style.background = '#666';
+		this.style.color = '#fff';
+		draw(d);
+	 });
+
+	d3.select("body")
+	.append("text")
+	.html("<br><br>")
+
+   	function draw (col){
+   		// remove the data to ensure clean output
+   		d3.selectAll('svg').remove();
+
+		x_selected = col
+
+		// groupby the data
+		var grouped = d3.nest()
+			.key(function(d){return d[x_selected]})
+			.key(function(d){return d.survived})
+			.entries(main_new);
+
+		var svg = d3.select('body')
+			.append('svg')
+			.attr({
+			'width':width_all,
+			'height':height})
+
+		// orgazing the groupby data into desired way
+		var x_new = new Object();
+		for (a = 0; a < grouped.length ; a++){
+			if (grouped[a]["key"] == '' ){
+				grouped[a]["key"] = "null"
+			} else{
+				grouped[a]["key"] = grouped[a]["key"]
+			}
+			try{survived = grouped[a].values[1].values.length}catch(err){survived=0};
+			try{non_survived = grouped[a].values[0].values.length}catch(err){non_survived=0};
+			x_new[grouped[a]["key"] + '_s'] = survived
+			x_new[grouped[a]["key"] + '_ns'] = non_survived
+		};
+		// make a list of nums to more easily calculate min & max
+		list_of_nums = new Array();
+
+		for (a in x_new){
+			list_of_nums.push(x_new[a])
+		}
+
+		// building a scaler for x,y
+		var x_scaled = d3.scale.ordinal()
+			.domain(Object.keys(x_new))
+			.rangeBands([0,width],1)
+			;
+
+		var y_scaled = d3.scale.linear()
+			.domain([Math.min(...list_of_nums),Math.max(...list_of_nums)])
+			.range([height-30,30]);
+
+		// y has two scaler since it's more convient to use two different scaler for data and axis
+		var y_scaled_2 = d3.scale.linear()
+			.domain([Math.min(...list_of_nums),Math.max(...list_of_nums)])
+			.range([3,height-60]);
+
+		// drawing axis
+		var axisY = d3.svg.axis()
+			.scale(y_scaled)
+			.orient("left")
+			.ticks(10);
+
+		var axisX = d3.svg.axis()
+			.scale(x_scaled)
+			.orient("bottom")
+			.ticks(10);
+
+
+		svg.append("g")
+			.call(axisY)
+			.attr({
+			'fill':'none',
+			'stroke':'#000',
+			'transform':'translate(30,0)' 
+			}).selectAll('text')
+			.attr({
+			'fill':'#000',
+			'stroke':'none',
+			}).style({
+			'font-size':'11px'
+			})
+		;
+
+		svg.append("g")
+			.call(axisX)
+			.attr({
+			'fill':'none',
+			'stroke':'#000',
+			'transform':'translate(30,'+(height-30)+')' 
+			}).selectAll('text')
+			.attr({
+			'fill':'#000',
+			'stroke':'none',
+			}).style({
+			'font-size':'11px'
+			})
+		;
+
+		// adjust the width of the graph to make it look nicer
+		x_width = (width-30) / (list_of_nums.length + 3)
+
+		// make a list of names to iterate over
+		x_names = new Array();
+		for (a in x_new){
+		x_names.push(a)
+		}
+
+		// create a object to calculate summary stats
+		var x_grouped = new Object();
+		for (a = 0; a < grouped.length ; a++){
+			if (grouped[a]["key"] == '' ){
+			grouped[a]["key"] = "null"
+			} else{
+			grouped[a]["key"] = grouped[a]["key"]
+			}
+
+			try{survived = grouped[a].values[1].values.length}catch(err){survived=0};
+			try{non_survived = grouped[a].values[0].values.length}catch(err){non_survived=0};
+
+			x_grouped[grouped[a]["key"]] = survived + non_survived
+		};
+
+		// plotting
+		d3
+		.select("body").select("svg")
+		.selectAll("rect")
+		.data(x_names)
+		.enter()
+		.append("rect")
+		.attr({
+		"width":x_width,
+		"height": function (d) {return (y_scaled_2(x_new[d]))},
+		"fill":function (d){
+			if (d.search("_s") != -1){
+				return "#663300"
+			}else{
+				return " #ff9933"
+			}
+		},
+		"x":function (d) {return (x_scaled(d))} ,
+		"y":function (d) {return (height - y_scaled_2(x_new[d]) - 30 )},
+		})	
+		.on("mouseover", function(d){
+
+			if (d.search("_s") != -1){
+			var_name = d.substring(0,d.search("_s"))
+			survived_ornot = "survived"
+			}else{
+			var_name = d.substring(0,d.search("_ns"))
+			survived_ornot = "not survived"
+			}  
+			percentage_format = d3.format(".0%")
+
+			percentage = percentage_format(x_new[d] / x_grouped[var_name])
+
+			div.style("opacity", .9);
+			div.html("<b>"+col+" = "+var_name+"</b><br>"+survived_ornot+"<br>"+x_new[d]+"<br>"+percentage)
+			.style("left", (d3.event.pageX) + "px")
+			.style("top", (d3.event.pageY - 28) + "px")
+			.style("font-size", 14)
+
+		})
+		.on("mouseout", function(d) {       
+        	div.style("opacity", 0);   
+    	}) 
+    	;
+
+    	// the explanation the meaning of different colors
+    	svg.append("rect")
+    	.attr({
+		"width":15,
+		"height": 15,
+		"fill":"#663300",
+		"x":width - 50,
+		"y":50
+		})
+
+    	svg.append("rect")
+    	.attr({
+		"width":15,
+		"height": 15,
+		"fill":"#ff9933",
+		"x":width - 50,
+		"y":75
+		})
+
+		svg.append("text")
+		.text("survived")
+		.attr({
+		"x":width - 50,
+		"y":50,
+		"fill":"#663300",
+		"font-size":14
+		})
+
+		svg.append("text")
+		.text("not survived")
+		.attr({
+		"x":width - 50,
+		"y":75,
+		"fill":"#ff9933",
+		"font-size":14
+		})
+
+
+	}
+
+
+});},false);
+
 </script>
 
 </body>
