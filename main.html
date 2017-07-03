@@ -174,8 +174,8 @@ var main = d3.text("titanic_data.csv", function(data) {
 			}
 			try{survived = grouped[a].values[1].values.length}catch(err){survived=0};
 			try{non_survived = grouped[a].values[0].values.length}catch(err){non_survived=0};
-			x_new[grouped[a]["key"] + '_s'] = survived
-			x_new[grouped[a]["key"] + '_ns'] = non_survived
+			x_new[grouped[a]["key"] + '_live'] = survived
+			x_new[grouped[a]["key"] + '_die'] = non_survived
 		};
 		// make a list of nums to more easily calculate min & max
 		list_of_nums = new Array();
@@ -276,7 +276,7 @@ var main = d3.text("titanic_data.csv", function(data) {
 		"width":x_width,
 		"height": function (d) {return (y_scaled_2(x_new[d]))},
 		"fill":function (d){
-			if (d.search("_s") != -1){
+			if (d.search("_live") != -1){
 				return "#663300"
 			}else{
 				return " #ff9933"
@@ -287,11 +287,11 @@ var main = d3.text("titanic_data.csv", function(data) {
 		})	
 		.on("mouseover", function(d){
 
-			if (d.search("_s") != -1){
-			var_name = d.substring(0,d.search("_s"))
+			if (d.search("_live") != -1){
+			var_name = d.substring(0,d.search("_live"))
 			survived_ornot = "survived"
 			}else{
-			var_name = d.substring(0,d.search("_ns"))
+			var_name = d.substring(0,d.search("_die"))
 			survived_ornot = "not survived"
 			}  
 			percentage_format = d3.format(".0%")
@@ -316,7 +316,7 @@ var main = d3.text("titanic_data.csv", function(data) {
 		"width":15,
 		"height": 15,
 		"fill":"#663300",
-		"x":width - 50,
+		"x":width_all - 150,
 		"y":50
 		})
 
@@ -325,14 +325,14 @@ var main = d3.text("titanic_data.csv", function(data) {
 		"width":15,
 		"height": 15,
 		"fill":"#ff9933",
-		"x":width - 50,
+		"x":width_all - 150,
 		"y":75
 		})
 
 		svg.append("text")
 		.text("survived")
 		.attr({
-		"x":width - 50,
+		"x":width_all - 150,
 		"y":50,
 		"fill":"#663300",
 		"font-size":14
@@ -341,7 +341,7 @@ var main = d3.text("titanic_data.csv", function(data) {
 		svg.append("text")
 		.text("not survived")
 		.attr({
-		"x":width - 50,
+		"x":width_all - 150,
 		"y":75,
 		"fill":"#ff9933",
 		"font-size":14

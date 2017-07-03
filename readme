@@ -1,0 +1,25 @@
+Dataset used: titanic
+Main.html is my final work.
+In order for the script to run, you need to change the path for the CSV file.
+
+main_scatter is the previous (incomplete) version of this project. It uses x and y axis to show two correlated dependent vars, and use the color to show the independent vars (y, survival).
+ 
+Design concepts:
+- Since "survival" is the most important var in this dataset, I plotted all vars against it
+- These 5 vars are the categorical vars, and can be appropriately represented in one single chart
+- Using bar chart, which is one of the most commonly used chart, makes it easier for layman to read 
+
+Feedbacks:
+1. The previous version (scatterplot) is too hard to read, suggesting a bar chart
+-> main_v1 to main_v2
+2. Instructor feedback: 
+	1) The legend is overlapping with the bar chart
+	-> changed!
+	2) Can remove the "_ns" and "_s" since it's not necessary
+	-> Not changed, see feedback 3
+3. It's a bit weird to see two bars having the same name
+-> thus I still keep the text, however change the wording to make it clearer
+
+Resources used:
+The primary resources that I used is from this website
+http://www.oxxostudio.tw/list.html
